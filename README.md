@@ -85,6 +85,30 @@ and shutdown handlers.
 
 ---
 
+## Slow query monitoring
+
+Queries slower than `slow_query_ms` (default 1000 ms, pass it in the `boot()`
+config array) are batched and sent non-blocking at shutdown. Disable with
+`'capture_queries' => false`.
+
+- **CodeIgniter 4** — automatic: `boot()` subscribes to the framework's
+  `DBQuery` event. Works with any DB driver (MySQLi, Postgre, SQLite3, ...).
+- **CodeIgniter 3** — no query event exists, so call this once late in the
+  request (e.g. a `post_system` hook). It reads the driver's built-in query
+  log (`save_queries` must stay enabled — it is by default):
+
+  ```php
+  \Bugban\CodeIgniter\BugbanCI::flushCi3Queries();
+  ```
+
+  Or record individual queries manually from anywhere:
+
+  ```php
+  \Bugban\Sdk\Bugban::recordQuery($sql, $durationMs, ['connection' => 'mysqli']);
+  ```
+
+---
+
 ## Manual capture
 
 Anywhere in your app:
