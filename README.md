@@ -58,6 +58,13 @@ require __DIR__ . '/path/to/bugban-php-sdk/autoload.php';
 \Bugban\Sdk\Bugban::registerHandlers();
 ```
 
+> ⚠️ **CI3 caveat:** CodeIgniter 3 calls `set_exception_handler()` during its own
+> bootstrap, which *replaces* the handler you register in `index.php`. So the
+> `index.php` approach alone captures **manual** `Bugban::capture($e)` calls but
+> **not uncaught exceptions**. For automatic capture of uncaught exceptions in CI3,
+> use **Option A (the `pre_system` hook)** — it runs *after* CI3 installs its handler
+> and re-registers Bugban's, so Bugban wins.
+
 ---
 
 ## CodeIgniter 4
