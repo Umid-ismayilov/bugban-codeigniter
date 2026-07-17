@@ -128,3 +128,27 @@ Or via the core facade:
 ```php
 \Bugban\Sdk\Bugban::captureMessage('Payment gateway timeout', 'error');
 ```
+
+## Log capture (errors logged but not thrown)
+
+Errors you catch and log without re-throwing only reach the log file. Enable
+`capture_logs` and forward them to Bugban with `recordLog()`:
+
+```php
+\Bugban\Sdk\Bugban::init([
+    'api_key'      => 'bb_xxxxxxxx',
+    'host'         => 'https://bugban.online',
+    'capture_logs' => true,
+    'log_level'    => 'error', // minimum PSR level forwarded
+]);
+
+// Anywhere you'd log an error:
+\Bugban\Sdk\Bugban::recordLog('error', 'Payment gateway timeout', ['order_id' => 123]);
+
+// Caught-and-logged throwable (attach it for a full stacktrace):
+try { risky(); } catch (\Throwable $e) {
+    \Bugban\Sdk\Bugban::recordLog('error', $e->getMessage(), ['exception' => $e]);
+}
+```
+
+Records below `log_level` are dropped; context is redacted; `recordLog()` never throws.
