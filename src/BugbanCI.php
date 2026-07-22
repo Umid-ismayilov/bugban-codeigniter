@@ -33,6 +33,58 @@ class BugbanCI
         Bugban::init($config);
         Bugban::registerHandlers();
         self::registerCi4QueryListener();
+        self::registerQueryRunner();
+    }
+
+    /**
+     * Let the Bugban panel re-run one of this app's own captured SELECTs and
+     * report the timing. Works on both CI4 (\Config\Database::connect()) and
+     * CI3 (the loaded $CI->db). Always inside a rolled-back transaction, and
+     * only the row COUNT is returned — never row data.
+     *
+     * @return void
+     */
+    private static function registerQueryRunner()
+    {
+        try {
+            Bugban::setQueryRunner(function ($sql, array $bindings) {
+                $db = null;
+
+                if (class_exists('\\Config\\Database')) {                 // CI4
+                    $db = \Config\Database::connect();
+                } elseif (function_exists('get_instance')) {              // CI3
+                    $ci = get_instance();
+                    $db = (is_object($ci) && isset($ci->db)) ? $ci->db : null;
+                }
+                if (!is_object($db)) {
+                    throw new \Exception('No CodeIgniter database connection is available.');
+                }
+
+                $db->transBegin();
+                try {
+                    $query = $db->query($sql, $bindings);
+                    $rows = ($query && method_exists($query, 'getResultArray'))
+                        ? $query->getResultArray()          // CI4
+                        : (($query && method_exists($query, 'result_array')) ? $query->result_array() : array());
+
+                    return is_array($rows) ? count($rows) : 0;
+                } catch (\Exception $e) {
+                    throw $e;
+                } catch (\Throwable $e) {
+                    throw $e;
+                } finally {
+                    try {
+                        $db->transRollback();
+                    } catch (\Exception $e) {
+                        // Nothing was written; a failed rollback is not fatal.
+                    }
+                }
+            });
+        } catch (\Exception $e) {
+            // Monitoring must never break the app.
+        } catch (\Throwable $e) {
+            // Same for engine errors.
+        }
     }
 
     /**
