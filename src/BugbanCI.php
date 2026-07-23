@@ -53,7 +53,7 @@ class BugbanCI
                 return;
             }
 
-            Bugban::setQueryRunner(function ($sql, array $bindings) {
+            Bugban::setQueryRunner(function ($sql, array $bindings, $returnRows = false) {
                 $db = null;
 
                 if (class_exists('\\Config\\Database')) {                 // CI4
@@ -73,7 +73,11 @@ class BugbanCI
                         ? $query->getResultArray()          // CI4
                         : (($query && method_exists($query, 'result_array')) ? $query->result_array() : array());
 
-                    return is_array($rows) ? count($rows) : 0;
+                    if (!is_array($rows)) {
+                        return $returnRows ? array() : 0;
+                    }
+
+                    return $returnRows ? $rows : count($rows);
                 } catch (\Exception $e) {
                     throw $e;
                 } catch (\Throwable $e) {
