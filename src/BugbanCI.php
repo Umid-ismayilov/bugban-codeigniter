@@ -47,6 +47,12 @@ class BugbanCI
     private static function registerQueryRunner()
     {
         try {
+            // The core SDK may be older than this adapter (stale lock file or a
+            // manual libs/ copy loaded first). Never call into it blindly.
+            if (!method_exists('\\Bugban\\Sdk\\Bugban', 'setQueryRunner')) {
+                return;
+            }
+
             Bugban::setQueryRunner(function ($sql, array $bindings) {
                 $db = null;
 
