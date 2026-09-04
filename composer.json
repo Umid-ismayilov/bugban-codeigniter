@@ -2,7 +2,13 @@
     "name": "bugban/codeigniter",
     "description": "Bugban error & monitoring SDK — CodeIgniter 3 & 4 adapter.",
     "type": "library",
-    "keywords": ["bugban", "codeigniter", "error-tracking", "monitoring", "exceptions"],
+    "keywords": [
+        "bugban",
+        "codeigniter",
+        "error-tracking",
+        "monitoring",
+        "exceptions"
+    ],
     "license": "MIT",
     "require": {
         "php": ">=7.0",
@@ -23,5 +29,10 @@
         "sort-packages": true
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "homepage": "https://bugban.online",
+    "support": {
+        "issues": "https://github.com/Umid-ismayilov/bugban-php-sdk/issues",
+        "docs": "https://bugban.online/integrations/codeigniter"
+    }
 }
