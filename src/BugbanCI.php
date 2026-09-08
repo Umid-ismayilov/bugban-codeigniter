@@ -213,4 +213,23 @@ class BugbanCI
     {
         Bugban::capture($e, $extra);
     }
+
+    /**
+     * Report an exception that reached CodeIgniter's own error handling
+     * (app/Config/Exceptions.php handler, CI3 _exception_handler, etc.) as
+     * UNHANDLED. Uncaught exceptions on plain PHP already flow through
+     * Bugban::registerHandlers() with the right flag; use this from a framework
+     * hook. Guarded against an older core without the method.
+     *
+     * @param \Throwable|\Exception $e
+     * @return void
+     */
+    public static function captureUnhandled($e, array $extra = array())
+    {
+        if (method_exists('Bugban\\Sdk\\Bugban', 'captureUnhandled')) {
+            Bugban::captureUnhandled($e, $extra);
+        } else {
+            Bugban::capture($e, $extra);
+        }
+    }
 }

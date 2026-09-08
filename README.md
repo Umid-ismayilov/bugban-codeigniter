@@ -129,6 +129,13 @@ Or via the core facade:
 \Bugban\Sdk\Bugban::captureMessage('Payment gateway timeout', 'error');
 ```
 
+## Updating the SDK
+```bash
+vendor/bin/bugban check      # exit 10 when a newer version is published
+vendor/bin/bugban update     # composer require bugban/php-sdk:^<latest> bugban/codeigniter:^<latest>
+```
+Automatic: `BUGBAN_AUTO_UPDATE=true` (or `'auto_update' => true` in the SDK config) — once a day at the end of a CLI run the SDK updates itself in a detached process (log `<tmp>/bugban-update.log`). Restart workers afterwards. Details: [bugban/php-sdk README](https://github.com/Umid-ismayilov/bugban-php-sdk#updating-the-sdk).
+
 ## Log capture (errors logged but not thrown)
 
 Errors you catch and log without re-throwing only reach the log file. Enable
