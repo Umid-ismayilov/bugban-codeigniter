@@ -9,6 +9,9 @@ use Bugban\Sdk\Bugban;
  */
 class BugbanCI
 {
+    /** Package version, reported in the SDK ping (keep in step with the core's Bugban::VERSION). */
+    const VERSION = '1.7.4';
+
     /**
      * Initialize the SDK and register global error/exception/shutdown handlers.
      *
@@ -28,6 +31,9 @@ class BugbanCI
         }
         if (!isset($config['sdk'])) {
             $config['sdk'] = 'bugban/codeigniter';
+        }
+        if ($config['sdk'] === 'bugban/codeigniter' && !isset($config['sdk_version'])) {
+            $config['sdk_version'] = self::VERSION;
         }
 
         Bugban::init($config);
