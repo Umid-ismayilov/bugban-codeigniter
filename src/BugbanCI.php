@@ -10,7 +10,7 @@ use Bugban\Sdk\Bugban;
 class BugbanCI
 {
     /** Package version, reported in the SDK ping (keep in step with the core's Bugban::VERSION). */
-    const VERSION = '1.7.4';
+    const VERSION = '1.7.5';
 
     /**
      * Initialize the SDK and register global error/exception/shutdown handlers.
