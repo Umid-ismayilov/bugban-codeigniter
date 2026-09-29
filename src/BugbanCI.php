@@ -10,7 +10,7 @@ use Bugban\Sdk\Bugban;
 class BugbanCI
 {
     /** Package version, reported in the SDK ping (keep in step with the core's Bugban::VERSION). */
-    const VERSION = '1.7.6';
+    const VERSION = '1.7.7';
 
     /**
      * Initialize the SDK and register global error/exception/shutdown handlers.
@@ -40,6 +40,58 @@ class BugbanCI
         Bugban::registerHandlers();
         self::registerCi4QueryListener();
         self::registerQueryRunner();
+        self::registerUserResolver();
+    }
+
+    /**
+     * Attach the logged-in user to every event without a manual setUser().
+     * CI4 + Shield: auth()->user(), only when its session key is there. Every other setup
+     * (CI3, Ion Auth, Myth:Auth, hand-rolled $_SESSION['user_id'] logins) is
+     * covered by the core's session fallback, which runs when this returns null.
+     *
+     * @return void
+     */
+    private static function registerUserResolver()
+    {
+        try {
+            if (!method_exists('\\Bugban\\Sdk\\Bugban', 'setUserResolver')) {
+                return;
+            }
+            Bugban::setUserResolver(array(__CLASS__, 'resolveUser'));
+        } catch (\Exception $e) {
+            // Monitoring must never break the app.
+        } catch (\Throwable $e) {
+            // Same for engine errors.
+        }
+    }
+
+    /**
+     * @return array|null
+     */
+    public static function resolveUser()
+    {
+        try {
+            // CodeIgniter Shield (CI4). Only when its session key is present,
+            // so a guest request never triggers an auth lookup.
+            if (function_exists('auth') && class_exists('\\CodeIgniter\\Shield\\Authentication\\Authentication', false)
+                && session_status() === PHP_SESSION_ACTIVE && !empty($_SESSION['user'])) {
+                $u = auth()->user();
+                if (is_object($u)) {
+                    return array(
+                        'id' => isset($u->id) ? $u->id : null,
+                        'email' => isset($u->email) ? $u->email : null,
+                        'name' => isset($u->username) ? $u->username : null,
+                        'guard' => 'shield',
+                    );
+                }
+            }
+        } catch (\Exception $e) {
+            // ignore
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
+        return null;
     }
 
     /**
